@@ -1,14 +1,13 @@
-# -*- coding: utf-8 -*-
 # Copyright 2023 Jacques-Etienne Baudoux (BCIM) <je@bcim.be>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl)
 
 import hashlib
 import json
-import requests
-from requests.auth import HTTPBasicAuth
 
-from odoo import _, api, models, fields
+import requests
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError
+from requests.auth import HTTPBasicAuth
 
 
 class PeppolServer(models.Model):
@@ -90,6 +89,7 @@ class PeppolServer(models.Model):
 
 class PeppolHistory(models.Model):
     _name = "peppol.history"
+    _order = "id desc"
 
     server_id = fields.Many2one(
         "peppol.server",
@@ -102,9 +102,11 @@ class PeppolHistory(models.Model):
     md5 = fields.Char(
         readonly=True,
     )
-    is_sending = fields.Boolean(index=True, help="The document is being transported to the other party")
+    is_sending = fields.Boolean(
+        index=True, help="The document is being transported to the other party"
+    )
 
     @api.model
     def _get_document_models(self):
-        models = [self.env["account.invoice"]]
+        models = [self.env["account.move"]]
         return [(model._name, model._description) for model in models]
