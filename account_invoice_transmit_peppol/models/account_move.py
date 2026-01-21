@@ -20,7 +20,7 @@ class AccountMove(models.Model):
         for invoice in self:
             description = _(
                 "Generating invoice for peppol sending: %(name)s",
-                name=invoice.display_name,
+                name=invoice.name,
             )
             invoice.with_delay(
                 description=description,
