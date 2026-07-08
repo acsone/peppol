@@ -2,6 +2,10 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
 from odoo import _, models
+from odoo.addons.account_invoice_export_ubl.models.peppol_server import (
+    PeppolTemporaryNetworkError,
+)
+from odoo.addons.queue_job.exception import RetryableJobError
 from odoo.addons.queue_job.job import identity_exact
 
 
@@ -51,4 +55,9 @@ class AccountMove(models.Model):
         """Sending by peppol"""
         invoices = self.filtered(lambda p: p._is_transmissible_by_peppol())
         invoices = invoices._transmit_invoice("peppol")
-        return invoices.peppol_export_invoice()
+        try:
+            return invoices.with_context(
+                peppol_raise_temporary_network_errors=True
+            ).peppol_export_invoice()
+        except PeppolTemporaryNetworkError as e:
+            raise RetryableJobError(str(e)) from e
